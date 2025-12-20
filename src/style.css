@@ -1,0 +1,640 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    /* Prevent selection on touch */
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #000;
+    font-family: 'Inter', sans-serif;
+}
+
+canvas {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    outline: none;
+    z-index: 1;
+}
+
+/* UI Container */
+#ui-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    /* Let clicks pass through to canvas/joystick */
+    z-index: 2;
+}
+
+/* Joystick */
+#joystick-zone {
+    position: absolute;
+    bottom: 50px;
+    left: 50px;
+    width: 150px;
+    height: 150px;
+    pointer-events: auto;
+    display: none;
+    /* Hidden by default, shown via JS if mobile */
+    /* Visual debug for zone */
+}
+
+/* Interact Button */
+#interact-button {
+    position: absolute;
+    bottom: 80px;
+    right: 50px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+    color: white;
+    font-weight: bold;
+    pointer-events: auto;
+    display: none;
+    /* Hidden by default */
+    backdrop-filter: blur(5px);
+    z-index: 10;
+}
+
+#interact-button.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+}
+
+
+.modal-content {
+    background: #222;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 600px;
+    color: white;
+    position: relative;
+    border: 1px solid #00ffcc;
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+#interact-label {
+    position: absolute;
+    bottom: 150px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 255, 204, 0.2);
+    border: 1px solid #00ffcc;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    backdrop-filter: blur(5px);
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 5;
+}
+
+#interact-label.hidden {
+    display: none;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Dance Button */
+#dance-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    backdrop-filter: blur(5px);
+    display: none;
+    /* Hidden by default (Desktop) */
+    z-index: 100;
+    touch-action: manipulation;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+#dance-btn:active {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+    #dance-btn {
+        display: block;
+    }
+}
+
+/* Interaction Panel */
+.interaction-container {
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 100;
+}
+
+.interaction-container.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.interaction-bubble {
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: sans-serif;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.key-hint {
+    background: white;
+    color: black;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+}
+
+/* Dialogue System */
+.dialogue-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Arka planı tamamen karartmak yerine hafif flu yapalım */
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 60px;
+    z-index: 2000;
+}
+
+@keyframes slideUpFade {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes floatBox {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Modern Diyalog Kutusu (Glassmorphism - Dark Mode) */
+.dialogue-box {
+    background: rgba(15, 23, 42, 0.95);
+    /* Slate-900 Dark */
+    color: #f1f5f9;
+    /* Slate-100 Text */
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    /* Derin gölge */
+    backdrop-filter: blur(12px);
+
+    width: 750px;
+    max-width: 90%;
+    padding: 32px;
+    border-radius: 20px;
+
+    font-family: 'Inter', system-ui, sans-serif;
+    position: relative;
+
+    /* Animations */
+    animation: slideUpFade 0.4s ease-out forwards, floatBox 6s ease-in-out infinite 0.4s;
+}
+
+.dialogue-box h3 {
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 15px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.dialogue-box p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+    /* Slate-300 */
+    min-height: 3.2rem;
+    /* Metin yazılırken zıplamayı önlemek için */
+    white-space: pre-wrap;
+}
+
+/* Seçenekler Izgarası */
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Modern Butonlar (Dark Interactive) */
+.dialogue-btn {
+    background: rgba(30, 41, 59, 0.6);
+    /* Slate-800 Semi-transparent */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+
+    padding: 15px 20px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+
+    /* Animation */
+    opacity: 0;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.dialogue-btn:hover {
+    background: #334155;
+    border-color: #38bdf8;
+    /* Sky Blue Vurgu */
+    color: #ffffff;
+    transform: translateX(5px);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+/* Butonun sonuna küçük bir ok eklemek için (CSS ile) */
+.dialogue-btn::after {
+    content: '➔';
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: #38bdf8;
+}
+
+.dialogue-btn:hover::after {
+    opacity: 1;
+}
+
+/* Staggered Animation Delays */
+.dialogue-btn:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.dialogue-btn:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.dialogue-btn:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.dialogue-btn:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+/* Kapat Butonu (Dark) */
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #94a3b8;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* Music Button */
+.music-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+
+    background: rgba(15, 23, 42, 0.8);
+    /* Koyu Yarı Saydam */
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.music-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 255, 200, 0.2);
+}
+
+/* Müzik çaldığında eklenecek aktif class */
+.music-btn.playing {
+    border-color: #00ffcc;
+    color: #00ffcc;
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.1);
+}
+
+/* --- LOADING SCREEN --- */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0f172a;
+    /* Slate-900 (Koyu Tema) */
+    z-index: 9999;
+    /* En üstte */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 1.5s ease-in-out, visibility 1.5s;
+}
+
+/* Yükleme bitince eklenecek sınıf */
+.loading-overlay.ended {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    /* Tıklamayı engelle */
+}
+
+.loading-container {
+    text-align: center;
+    color: #f8fafc;
+    font-family: 'Inter', sans-serif;
+}
+
+.loading-title {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    background: linear-gradient(to right, #00c6ff, #0072ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.loading-text {
+    color: #94a3b8;
+    margin-bottom: 30px;
+    font-size: 0.9rem;
+}
+
+/* İlerleme çubuğu */
+.progress-container {
+    width: 300px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.progress-fill {
+    width: 0%;
+    /* JS ile artacak */
+    height: 100%;
+    background: #38bdf8;
+    /* Neon Mavi */
+    box-shadow: 0 0 10px #38bdf8;
+    transition: width 0.2s;
+}
+
+.percentage-text {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+/* Enter Button (Loading Screen) */
+.enter-btn {
+    margin-top: 20px;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(0, 114, 255, 0.5);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+
+    /* Animation */
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s forwards;
+}
+
+.enter-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 0 30px rgba(0, 114, 255, 0.8);
+}
+
+.enter-btn:active {
+    transform: scale(0.98);
+}
+
+.enter-btn.hidden {
+    display: none;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 1024px) {
+    #joystick-zone {
+        display: block !important;
+    }
+
+    .key-hint {
+        display: none;
+    }
+
+    /* Mobilde 'E' tuşu ipucunu gizle */
+}
+
+/* --- MOBİL UYUMLULUK (Responsive) --- */
+@media (max-width: 768px) {
+
+    /* 1. Diyalog Kutusu */
+    .dialogue-box {
+        width: 90% !important;
+        /* Ekranın %90'ını kapla */
+        padding: 20px !important;
+        bottom: 20px;
+        border-radius: 15px;
+    }
+
+    .dialogue-box h3 {
+        font-size: 1.2rem;
+    }
+
+    .dialogue-box p {
+        font-size: 0.95rem;
+    }
+
+    /* 2. Etkileşim Baloncuğu */
+    .interaction-bubble {
+        bottom: 120px;
+        /* Joystick'in üstünde kalsın */
+        padding: 10px 20px;
+    }
+
+    /* 3. Müzik Butonu */
+    .music-btn {
+        top: 15px;
+        left: 15px;
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+
+    /* 4. Loading Screen */
+    .loading-title {
+        font-size: 1.5rem;
+    }
+
+    .progress-container {
+        width: 80%;
+    }
+
+    /* 5. Butonlar */
+    .dialogue-btn {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+}

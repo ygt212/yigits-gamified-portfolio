@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yiğit'in Portfoyu</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
+  <script type="module" crossorigin src="./assets/index-Bot0nhHR.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DaujGqCJ.css">
+</head>
+
+<body>
+    <canvas class="webgl"></canvas>
+    <div class="loading-bar"></div>
+    <div class="loading-overlay">
+        <div class="loading-container">
+            <h1 class="loading-title">YİĞİT'in PORTFOYU</h1>
+            <p class="loading-text">Şehir İnşa Ediliyor...</p>
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-fill"></div>
+            </div>
+            <p id="progress-percentage" class="percentage-text">0%</p>
+            <button id="enter-button" class="enter-btn hidden">Dünyaya Giriş Yap</button>
+        </div>
+    </div>
+
+
+
+    <button id="music-toggle" class="music-btn">
+        <span id="music-icon">🔇</span> <span class="music-text">Müziği Aç</span>
+    </button>
+    <audio id="bg-music" loop>
+        <source src="sounds/background.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="ui-container">
+        <!-- Virtual Joystick Zone -->
+        <div id="joystick-zone"
+            style="position: absolute; bottom: 50px; left: 50px; width: 150px; height: 150px; z-index: 10; display: none;">
+        </div>
+        <!-- Dance Button (Mobile Only) -->
+        <button id="dance-btn">Dans Et!</button>
+        <!-- Interact Button (Mobile Only) -->
+        <button id="interact-button">ETKİLEŞİM</button>
+        <!-- Desktop Interact Prompt -->
+        <div id="interact-label" class="hidden">Etkileşim için BOŞLUK tuşuna basın</div>
+    </div>
+
+    <!-- Modal for Dynamic Content -->
+    <div id="content-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Gameplay Interaction Panel -->
+    <div id="interaction-panel" class="interaction-container">
+        <div class="interaction-bubble">
+            <span id="interaction-label">Test Point</span>
+            <div class="key-hint">E</div>
+        </div>
+    </div>
+
+    <!-- Dialogue System Overlay -->
+    <div id="dialogue-container" class="dialogue-overlay hidden">
+        <div class="dialogue-box">
+            <h3 id="npc-name">NPC İsmi</h3>
+            <p id="npc-text">Diyalog metni buraya gelecek...</p>
+            <div id="dialogue-options" class="options-grid">
+                <!-- Buttons will be injected here -->
+            </div>
+            <button id="close-dialogue" class="close-btn">X</button>
+        </div>
+    </div>
+
+</body>
+
+</html>

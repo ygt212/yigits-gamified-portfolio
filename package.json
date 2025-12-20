@@ -1,0 +1,22 @@
+{
+  "name": "site",
+  "version": "1.0.0",
+  "description": "",
+  "main": "vite.config.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "gsap": "^3.14.2",
+    "lil-gui": "^0.21.0",
+    "nipplejs": "^0.10.2",
+    "three": "^0.182.0",
+    "vite": "^7.3.0"
+  }
+}
