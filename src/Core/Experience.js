@@ -48,7 +48,7 @@ export default class Experience {
             {
                 name: 'city',
                 type: 'gltfModel',
-                path: 'models/city_bundle/scene.gltf'
+                path: 'models/city.glb'
             },
             {
                 name: 'npcModel',
