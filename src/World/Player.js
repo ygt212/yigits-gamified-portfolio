@@ -13,18 +13,11 @@ export default class Player {
         this.setGeometry()
         this.setCamera()
 
-        this.setCamera()
+
 
         // Debug (Temporary for Development)
         if (this.experience.debug.active) {
             this.debugFolder = this.experience.debug.ui.addFolder('Tools')
-
-            const debugObject = {
-                printCoords: () => {
-                    console.log(`📍 COORDS: new THREE.Vector3(${this.mesh.position.x.toFixed(2)}, ${this.mesh.position.y.toFixed(2)}, ${this.mesh.position.z.toFixed(2)})`)
-                }
-            }
-            this.debugFolder.add(debugObject, 'printCoords').name('Print Current Coords 📍')
         }
     }
 
@@ -161,9 +154,7 @@ export default class Player {
 
             // 2. World Boundary Check
             const nextPosition = this.mesh.position.clone().add(direction)
-            // if (nextPosition.length() > 60) { // Limit to 60 units radius
-            //     blocked = true
-            // }
+
 
             // Apply Position if not blocked
             if (!blocked) {

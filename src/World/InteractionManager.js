@@ -51,8 +51,22 @@ export default class InteractionManager {
 
             // 5. POSTER İNCELEME
             poster_view: {
-                speaker: "Proje Posteri", // Custom speaker name
-                text: "(Poster İnceleniyor...)\n\n📜 YİĞİT'İN PROJELERİ\n\n1. Oyunlaştırılmış Portfoy Dünyası (Three.js)\n2. Yapay Zeka Destekli Veri Madenciliği Sistemi\n3. Öğrenci - Hoca Atama Algoritması (Matematiksel Model)\n4. TÜBİTAK Kadın Cinayetleri Veri Madenciliği [Üzerinde Çalışılıyor...]\n\nEğer onu daha detaylı tanımak isterseniz stadın içindeki adamla konuşabilirsiniz.",
+                speaker: "Proje Posteri",
+                type: "project_list",
+                text: "(Poster İnceleniyor...)\n\n📜 YİĞİT'İN PROJELERİ",
+                footer: "\nEğer onu daha detaylı tanımak isterseniz stadın içindeki adamla konuşabilirsiniz.",
+                projects: [
+                    {
+                        name: "1. Oyunlaştırılmış Portfoy Dünyası (Three.js)",
+                        githubLink: "https://github.com/ygt212/yigits-gamified-portfolio"
+                    },
+                    {
+                        name: "2. Yapay Zeka Destekli Veri Madenciliği Sistemi",
+                        githubLink: "https://github.com/ygt212/ai-powered-data-mining-agent"
+                    },
+                    { name: "3. Öğrenci - Hoca Atama Algoritması (Matematiksel Model)" },
+                    { name: "4. TÜBİTAK Kadın Cinayetleri Veri Madenciliği [Üzerinde Çalışılıyor...]" }
+                ],
                 choices: [
                     { label: "İncelemeyi Bitir", next: "end" }
                 ]
@@ -80,6 +94,7 @@ export default class InteractionManager {
                 npcName: "Neymar da Silva Santos",
                 text: "Ona ulaşmak için en iyi kanallar burada. Pası sana atıyorum, golü sen at! 👇",
                 choices: [
+                    { label: "GitHub (Kodlarım) 💻", action: "openGithub", next: "end" },
                     { label: "LinkedIn", action: "openLinkedin", next: "end" },
                     { label: "Instagram", action: "openInstagram", next: "end" },
                     { label: "Vazgeçtim.", next: "end" }
@@ -186,34 +201,111 @@ export default class InteractionManager {
             nameEl.innerText = "Rehber"; // Default name
         }
 
-        // Clear Options (Wait for typing)
+        // Clear Options (Wait for typing or render immediately)
         this.ui.optionsGrid.innerHTML = ''
 
-        // Start Typewriter
-        this.typeWriter(data.text, () => {
-            // Create Buttons after typing finishes
-            data.choices.forEach(choice => {
-                const btn = document.createElement('button')
-                btn.className = 'dialogue-btn'
-                btn.innerText = choice.label
-                btn.addEventListener('click', () => {
-                    if (choice.action === "startPath") {
-                        this.createNavigationPath()
+        // --- Custom Render for Projects ---
+        if (data.type === 'project_list' && data.projects) {
+            // 1. Önce Daktilo Efekti ile metni yaz
+            this.typeWriter(data.text, () => {
+                // 2. Daktilo bitince burası çalışır: Projeleri Hazırla
+                const projectsContainer = document.createElement('div')
+                projectsContainer.style.marginTop = '15px'
+                projectsContainer.style.opacity = '0'
+                projectsContainer.style.transition = 'opacity 0.8s ease-in'
+
+                // Render Projects and Button (Turkish)
+                data.projects.forEach(proj => {
+                    const item = document.createElement('div')
+                    item.style.marginBottom = '12px'
+                    item.innerText = proj.name
+
+                    if (proj.githubLink) {
+                        const btn = document.createElement('a')
+                        btn.href = proj.githubLink
+                        btn.target = '_blank'
+                        btn.innerText = ' Github Üzerinden İncele 🔗'
+                        // Button Styles
+                        btn.style.display = 'inline-block'
+                        btn.style.marginLeft = '10px'
+                        btn.style.fontSize = '0.8rem'
+                        btn.style.color = '#00ffcc'
+                        btn.style.textDecoration = 'none'
+                        btn.style.border = '1px solid #00ffcc'
+                        btn.style.padding = '2px 8px'
+                        btn.style.borderRadius = '12px'
+                        btn.style.pointerEvents = 'auto'
+                        btn.style.cursor = 'pointer'
+                        btn.style.transition = 'all 0.3s'
+
+                        // Hover effect
+                        btn.onmouseover = () => {
+                            btn.style.background = 'rgba(0, 255, 204, 0.1)'
+                        }
+                        btn.onmouseout = () => {
+                            btn.style.background = 'transparent'
+                        }
+
+                        item.appendChild(btn)
                     }
-                    if (choice.action === 'openLinkedin') {
-                        window.open('https://www.linkedin.com/in/talha-yi%C4%9Fit-y%C4%B1ld%C4%B1r%C4%B1m-9aa84a27a/', '_blank');
-                    }
-                    if (choice.action === 'openInstagram') {
-                        window.open('https://www.instagram.com/yigityyildirm/', '_blank');
-                    }
-                    this.startDialogue(choice.next)
+                    projectsContainer.appendChild(item)
                 })
-                this.ui.optionsGrid.appendChild(btn)
+
+                // Render Footer inside container if exists
+                if (data.footer) {
+                    const footer = document.createElement('div')
+                    footer.innerText = data.footer
+                    footer.style.marginTop = '15px'
+                    footer.style.fontSize = '0.9em'
+                    footer.style.color = '#ccc'
+                    projectsContainer.appendChild(footer)
+                }
+
+                // Append to DOM
+                this.ui.npcText.appendChild(projectsContainer)
+
+                // Trigger Fade-In
+                requestAnimationFrame(() => {
+                    projectsContainer.style.opacity = '1'
+                })
+
+                // Show choices
+                this.createChoiceButtons(data.choices)
             })
-        })
+
+        } else {
+            // Standard Typewriter
+            this.typeWriter(data.text, () => {
+                this.createChoiceButtons(data.choices)
+            })
+        }
 
         // Disable movement while talking
         if (this.player) this.player.canMove = false
+    }
+
+    createChoiceButtons(choices) {
+        choices.forEach(choice => {
+            const btn = document.createElement('button')
+            btn.className = 'dialogue-btn'
+            btn.innerText = choice.label
+            btn.addEventListener('click', () => {
+                if (choice.action === "startPath") {
+                    this.createNavigationPath()
+                }
+                if (choice.action === 'openLinkedin') {
+                    window.open('https://www.linkedin.com/in/talha-yi%C4%9Fit-y%C4%B1ld%C4%B1r%C4%B1m-9aa84a27a/', '_blank');
+                }
+                if (choice.action === 'openInstagram') {
+                    window.open('https://www.instagram.com/yigityyildirm/', '_blank');
+                }
+                if (choice.action === 'openGithub') {
+                    window.open("https://github.com/ygt212", "_blank");
+                }
+                this.startDialogue(choice.next)
+            })
+            this.ui.optionsGrid.appendChild(btn)
+        })
     }
 
     typeWriter(text, callback) {
